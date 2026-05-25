@@ -81,48 +81,19 @@ scope.launch {
 }
 ```
 
-## Publishing (maintainer notes)
+## Publishing
 
-This library is published to Maven Central via Sonatype Central Portal under the auto-verified `io.github.omkardharmesh` namespace.
+Maintainer workflow — Central Portal account, GPG keypair, version bump, release command, troubleshooting — lives in [PUBLISHING.md](PUBLISHING.md).
 
-### One-time setup
-
-1. Create a Central Portal account at [central.sonatype.com](https://central.sonatype.com) by signing in with GitHub. This auto-verifies the `io.github.omkardharmesh` namespace.
-2. Generate a User Token at `https://central.sonatype.com/account` → "Generate User Token". This produces a username + password pair distinct from your login.
-3. Generate a GPG key and export an ASCII-armored secret key (the in-memory format vanniktech consumes, which avoids BouncyCastle's brittle keyring parser):
-   ```bash
-   gpg --gen-key
-   gpg --list-secret-keys --keyid-format=long
-   gpg --export-secret-keys --armor <KEY_ID> > ~/.gnupg/secring.asc
-   gpg --keyserver keys.openpgp.org --send-keys <KEY_ID>
-   ```
-4. Add credentials to the gitignored `local.properties` at the repo root:
-   ```properties
-   sdk.dir=/Users/<you>/Library/Android/sdk
-
-   # Sonatype Central Portal user token (NOT your login password)
-   mavenCentralUsername=<token-name>
-   mavenCentralPassword=<token-password>
-
-   # GPG signing — last 8 chars of the key ID, the passphrase, and where the
-   # ASCII-armored secret key lives. Defaults to ~/.gnupg/secring.asc if
-   # signing.secretKeyAsciiFile is omitted.
-   signing.keyId=<last-8-chars-of-key-id>
-   signing.password=<gpg-key-passphrase>
-   signing.secretKeyAsciiFile=/Users/<you>/.gnupg/secring.asc
-   ```
-
-### Release
-
-iOS klibs require a macOS host.
+Quick release (after one-time setup):
 
 ```bash
-git tag v<X.Y.Z>
-git push origin v<X.Y.Z>
+# 1. bump version in konnectivity/build.gradle.kts + README
+# 2. commit + tag + push
 ./publish.sh
 ```
 
-`./publish.sh` reads `local.properties`, loads the ASCII-armored key into memory, and invokes `./gradlew :konnectivity:publishAndReleaseToMavenCentral` with the credentials as `-P` arguments. The artifact appears at [central.sonatype.com/artifact/io.github.omkardharmesh/konnectivity](https://central.sonatype.com/artifact/io.github.omkardharmesh/konnectivity) within ~10 minutes.
+iOS klibs require a macOS host. Artifact appears at [central.sonatype.com/artifact/io.github.omkardharmesh/konnectivity](https://central.sonatype.com/artifact/io.github.omkardharmesh/konnectivity) within ~10 minutes.
 
 ## Credits
 
