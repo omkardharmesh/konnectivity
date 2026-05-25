@@ -1,22 +1,7 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.vanniktech.maven.publish)
-}
-
-// Load Maven Central + signing credentials from root local.properties (gitignored).
-// Vanniktech's maven-publish plugin resolves them via project.findProperty().
-val localProps = rootProject.file("local.properties").takeIf { it.exists() }?.let { file ->
-    Properties().apply { file.inputStream().use { load(it) } }
-}
-localProps?.forEach { (name, value) ->
-    val key = name.toString()
-    if (key == "sdk.dir") return@forEach
-    if (!project.hasProperty(key)) {
-        project.extensions.extraProperties[key] = value
-    }
 }
 
 kotlin {
