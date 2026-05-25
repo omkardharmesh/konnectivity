@@ -1,4 +1,4 @@
 jdk:
-  - openjdk11
+  - openjdk17
 install:
-  - ./gradlew :konnectivity:publishToMavenLocal
+  - ./gradlew :konnectivity:publishToMavenLocal --no-daemon --no-configuration-cache

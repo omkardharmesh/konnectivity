@@ -1,37 +1,41 @@
 # Konnectivity
 
-A Kotlin multiplaform mobile library for checking the network connectivity status of a mobile device.
+A Kotlin Multiplatform library for checking the network connectivity status of a mobile device.
 
-## Supported Targets
+This fork is maintained at [omkardharmesh/konnectivity](https://github.com/omkardharmesh/konnectivity) and adds:
 
-* Android
-* iOS - must use physical device to test, the iOS simulator does not work
+- **NPE-safe `Konnectivity()` factory** — returns a no-op `KonnectivityImpl(NONE)` when called before `androidx.startup` has populated the application context, instead of throwing.
+- **Modern KMP build** — Kotlin 2.2.x, AGP 8.13+, Gradle 9.x, `com.android.kotlin.multiplatform.library` DSL, `gradle/libs.versions.toml` version catalog, `com.vanniktech.maven.publish` plugin.
+- **Published via JitPack** for anonymous public consumption (no auth required).
+
+[![JitPack](https://jitpack.io/v/omkardharmesh/konnectivity.svg)](https://jitpack.io/#omkardharmesh/konnectivity)
+
+## Supported targets
+
+- Android (`minSdk = 21`, `compileSdk = 36`)
+- iOS (`iosArm64`, `iosSimulatorArm64`) — physical device required for `WIFI` / `CELLULAR` reporting on iOS
 
 ## Setup
 
+Add the JitPack repository in `settings.gradle.kts`:
+
 ```kotlin
-buildscript {
+dependencyResolutionManagement {
     repositories {
+        google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
     }
 }
 ```
 
-Add Konnectivity to `commonMain` dependencies with the latest version.
-
-[![Maven Central](https://img.shields.io/maven-central/v/com.plusmobileapps/konnectivity?color=blue)](https://search.maven.org/artifact/com.plusmobileapps/konnectivity)
-
+Add the dependency to your KMP `commonMain` source set:
 
 ```kotlin
 kotlin {
-    android()
-    ios()
-
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation("com.plusmobileapps:konnectivity:$version")
-            }
+        commonMain.dependencies {
+            implementation("com.github.omkardharmesh:konnectivity:0.0.1")
         }
     }
 }
@@ -39,37 +43,35 @@ kotlin {
 
 ## Usage
 
-Create a single instance of `Konnectivity` and inject into your app.
+Create a single instance of `Konnectivity` and inject it:
 
 ```kotlin
-// create a single instance
 val konnectivity: Konnectivity = Konnectivity()
 ```
 
-Retrieve the current value of the network connectivity status. 
+Read the current status:
 
 ```kotlin
 val isConnected: Boolean = konnectivity.isConnected
 
-val networkConnection: NetworkConnection = konnectivity.currentNetworkConnection
-when (networkConnection) {
+when (konnectivity.currentNetworkConnection) {
     NetworkConnection.NONE -> "Not connected to the internet"
     NetworkConnection.WIFI -> "Connected to wifi"
     NetworkConnection.CELLULAR -> "Connected to cellular"
 }
 ```
 
-Observe the latest value of the network connectivity status. Replace `GlobalScope` with your own `CoroutineScope`.
+Observe changes via `StateFlow`:
 
 ```kotlin
-GlobalScope.launch {
-    konnectivity.isConnectedState.collect { isConnected -> 
-       // insert code
+scope.launch {
+    konnectivity.isConnectedState.collect { isConnected ->
+        // react
     }
 }
 
-GlobalScope.launch {
-    konnectivity.currentNetworkConnectionState.collect { connection -> 
+scope.launch {
+    konnectivity.currentNetworkConnectionState.collect { connection ->
         when (connection) {
             NetworkConnection.NONE -> "Not connected to the internet"
             NetworkConnection.WIFI -> "Connected to wifi"
@@ -79,6 +81,17 @@ GlobalScope.launch {
 }
 ```
 
-## Resources
+## Publishing (maintainer notes)
 
-* [Publishing your Kotlin Multiplatform library to Maven Central](https://dev.to/kotlin/how-to-build-and-publish-a-kotlin-multiplatform-library-going-public-4a8k)
+Push a git tag `vX.Y.Z` to `main`; JitPack will build and publish the artifact on demand from that tag.
+
+```bash
+git tag v0.0.1
+git push origin v0.0.1
+```
+
+The artifact will be available at `https://jitpack.io/com/github/omkardharmesh/konnectivity/<version>` once the build succeeds.
+
+## Credits
+
+Forked from [Plus-Mobile-Apps/konnectivity](https://github.com/Plus-Mobile-Apps/konnectivity) (MIT) by Andrew Steinmetz.
