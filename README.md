@@ -35,7 +35,7 @@ Add the dependency to your KMP `commonMain` source set:
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.omkardharmesh:konnectivity:0.0.1")
+            implementation("io.github.omkardharmesh:konnectivity:0.0.2")
         }
     }
 }
