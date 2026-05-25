@@ -63,7 +63,7 @@ publishing {
         pom {
             name.set("Konnectivity")
             description.set("A kotlin multiplatform mobile library for checking the current network connectivity status")
-            url.set("https://github.com/plusmobileapps/konnectivity")
+            url.set("https://github.com/omkardharmesh/konnectivity")
 
             licenses {
                 license {
@@ -73,26 +73,27 @@ publishing {
             }
             developers {
                 developer {
-                    id.set("plusmobileapps")
-                    name.set("Andrew Steinmetz")
-                    email.set("andrew@plusmobileapps.com")
+                    id.set("omkardharmesh")
+                    name.set("omkardharmesh")
+                    email.set("31363769+omkardharmesh@users.noreply.github.com")
                 }
             }
             scm {
-                url.set("https://github.com/plusmobileapps/konnectivity")
+                url.set("https://github.com/omkardharmesh/konnectivity")
             }
 
         }
     }
 }
 
-// Signing artifacts. Signing.* extra properties values will be used
-
-signing {
-    useInMemoryPgpKeys(
-        getExtraString("signing.keyId"),
-        getExtraString("signing.secretKeyRingFile"),
-        getExtraString("signing.password")
-    )
-    sign(publishing.publications)
+// Signing artifacts. Only configured when signing.keyId is available (skipped on JitPack).
+if (getExtraString("signing.keyId") != null) {
+    signing {
+        useInMemoryPgpKeys(
+            getExtraString("signing.keyId"),
+            getExtraString("signing.secretKeyRingFile"),
+            getExtraString("signing.password")
+        )
+        sign(publishing.publications)
+    }
 }
