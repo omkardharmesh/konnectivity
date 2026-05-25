@@ -5,26 +5,34 @@ A Kotlin Multiplatform library for checking the network connectivity status of a
 This fork is maintained at [omkardharmesh/konnectivity](https://github.com/omkardharmesh/konnectivity) and adds:
 
 - **NPE-safe `Konnectivity()` factory** — returns a no-op `KonnectivityImpl(NONE)` when called before `androidx.startup` has populated the application context, instead of throwing.
-- **Modern KMP build** — Kotlin 2.2.x, AGP 8.13+, Gradle 9.x, `com.android.kotlin.multiplatform.library` DSL, `gradle/libs.versions.toml` version catalog, `com.vanniktech.maven.publish` plugin.
-- **Published via JitPack** for anonymous public consumption (no auth required).
-
-[![JitPack](https://jitpack.io/v/omkardharmesh/konnectivity.svg)](https://jitpack.io/#omkardharmesh/konnectivity)
+- **Modern KMP build** — Kotlin 2.2.x, AGP 8.13, Gradle 8.13, `com.android.kotlin.multiplatform.library` DSL, `gradle/libs.versions.toml` version catalog, `com.vanniktech.maven.publish` plugin.
+- **Published to GitHub Packages** from macOS — full KMP distribution (Android AAR + `iosArm64` + `iosSimulatorArm64` klibs).
 
 ## Supported targets
 
 - Android (`minSdk = 21`, `compileSdk = 36`)
 - iOS (`iosArm64`, `iosSimulatorArm64`) — physical device required for `WIFI` / `CELLULAR` reporting on iOS
 
-## Setup
+## Consuming the artifact
 
-Add the JitPack repository in `settings.gradle.kts`:
+GitHub Packages requires authentication even for public packages. Add credentials to `~/.gradle/gradle.properties` (NOT the project-level `gradle.properties`):
+
+```properties
+githubPackagesUsername=<your-github-username>
+githubPackagesPassword=<personal-access-token-with-read:packages-scope>
+```
+
+Add the GitHub Packages repository in `settings.gradle.kts`:
 
 ```kotlin
 dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
+        maven {
+            url = uri("https://maven.pkg.github.com/omkardharmesh/konnectivity")
+            credentials(PasswordCredentials::class)
+        }
     }
 }
 ```
@@ -35,7 +43,7 @@ Add the dependency to your KMP `commonMain` source set:
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("com.github.omkardharmesh:konnectivity:0.0.1")
+            implementation("com.omkardharmesh:konnectivity:0.0.1")
         }
     }
 }
@@ -83,14 +91,22 @@ scope.launch {
 
 ## Publishing (maintainer notes)
 
-Push a git tag `vX.Y.Z` to `main`; JitPack will build and publish the artifact on demand from that tag.
+GitHub Packages must be published from macOS to include iOS klibs. JitPack will not work — its Linux build runners cannot cross-compile Kotlin/Native iOS targets.
+
+```bash
+ORG_GRADLE_PROJECT_githubPackagesUsername=omkardharmesh \
+ORG_GRADLE_PROJECT_githubPackagesPassword=$(gh auth token) \
+./gradlew :konnectivity:publishAllPublicationsToGithubPackagesRepository
+```
+
+This uses the active `gh` CLI account's token (no PAT stored on disk). Replace with `read:packages` + `write:packages` scoped PAT in `~/.gradle/gradle.properties` for repeatable publishes.
+
+Tag the release for traceability:
 
 ```bash
 git tag v0.0.1
 git push origin v0.0.1
 ```
-
-The artifact will be available at `https://jitpack.io/com/github/omkardharmesh/konnectivity/<version>` once the build succeeds.
 
 ## Credits
 

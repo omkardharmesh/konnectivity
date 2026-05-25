@@ -41,9 +41,23 @@ kotlin {
     }
 }
 
+// GitHub Packages publishing configuration
+// to publish: ./gradlew :konnectivity:publishAllPublicationsToGithubPackagesRepository
+// credentials sourced from env (ORG_GRADLE_PROJECT_githubPackagesUsername/Password)
+// or ~/.gradle/gradle.properties (user-level, NOT project)
+publishing {
+    repositories {
+        maven {
+            name = "githubPackages"
+            url = uri("https://maven.pkg.github.com/omkardharmesh/konnectivity")
+            credentials(PasswordCredentials::class)
+        }
+    }
+}
+
 mavenPublishing {
     coordinates(
-        groupId = "com.github.omkardharmesh",
+        groupId = "com.omkardharmesh",
         artifactId = "konnectivity",
         version = "0.0.1"
     )
