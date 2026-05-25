@@ -9,7 +9,8 @@ import android.net.NetworkRequest
 import android.os.Build
 
 actual fun Konnectivity(): Konnectivity {
-    val appContext = appContext!!
+    val appContext = appContext
+        ?: return KonnectivityImpl(initialConnection = NetworkConnection.NONE)
     val connectivityManager: ConnectivityManager =
         appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val konnectivity = KonnectivityImpl(
