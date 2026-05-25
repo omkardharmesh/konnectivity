@@ -6,7 +6,9 @@ This fork is maintained at [omkardharmesh/konnectivity](https://github.com/omkar
 
 - **NPE-safe `Konnectivity()` factory** — returns a no-op `KonnectivityImpl(NONE)` when called before `androidx.startup` has populated the application context, instead of throwing.
 - **Modern KMP build** — Kotlin 2.2.x, AGP 8.13, Gradle 8.13, `com.android.kotlin.multiplatform.library` DSL, `gradle/libs.versions.toml` version catalog, `com.vanniktech.maven.publish` plugin.
-- **Published to GitHub Packages** from macOS — full KMP distribution (Android AAR + `iosArm64` + `iosSimulatorArm64` klibs).
+- **Published to Maven Central** — anonymous public consumption, no authentication required.
+
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.omkardharmesh/konnectivity?color=blue)](https://central.sonatype.com/artifact/io.github.omkardharmesh/konnectivity)
 
 ## Supported targets
 
@@ -15,24 +17,14 @@ This fork is maintained at [omkardharmesh/konnectivity](https://github.com/omkar
 
 ## Consuming the artifact
 
-GitHub Packages requires authentication even for public packages. Add credentials to `~/.gradle/gradle.properties` (NOT the project-level `gradle.properties`):
-
-```properties
-githubPackagesUsername=<your-github-username>
-githubPackagesPassword=<personal-access-token-with-read:packages-scope>
-```
-
-Add the GitHub Packages repository in `settings.gradle.kts`:
+`mavenCentral()` is the only repository required. No credentials needed.
 
 ```kotlin
+// settings.gradle.kts
 dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("https://maven.pkg.github.com/omkardharmesh/konnectivity")
-            credentials(PasswordCredentials::class)
-        }
     }
 }
 ```
@@ -43,7 +35,7 @@ Add the dependency to your KMP `commonMain` source set:
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("com.omkardharmesh:konnectivity:0.0.1")
+            implementation("io.github.omkardharmesh:konnectivity:0.0.1")
         }
     }
 }
@@ -91,22 +83,39 @@ scope.launch {
 
 ## Publishing (maintainer notes)
 
-GitHub Packages must be published from macOS to include iOS klibs. JitPack will not work — its Linux build runners cannot cross-compile Kotlin/Native iOS targets.
+This library is published to Maven Central via Sonatype Central Portal under the auto-verified `io.github.omkardharmesh` namespace.
+
+### One-time setup
+
+1. Create a Central Portal account at [central.sonatype.com](https://central.sonatype.com) by signing in with GitHub. This auto-verifies the `io.github.omkardharmesh` namespace.
+2. Generate a User Token at `https://central.sonatype.com/account` → "Generate User Token". This produces a username + password pair distinct from your login.
+3. Generate a GPG key:
+   ```bash
+   gpg --gen-key
+   gpg --list-secret-keys --keyid-format=long
+   gpg --export-secret-keys --armor <KEY_ID> > ~/.gnupg/secring.asc
+   gpg --keyserver keys.openpgp.org --send-keys <KEY_ID>
+   ```
+4. Add credentials to `~/.gradle/gradle.properties` (NOT the project file):
+   ```properties
+   mavenCentralUsername=<central-portal-user-token-name>
+   mavenCentralPassword=<central-portal-user-token-password>
+   signing.keyId=<last-8-chars-of-key-id>
+   signing.password=<gpg-key-passphrase>
+   signing.secretKeyRingFile=/Users/<you>/.gnupg/secring.gpg
+   ```
+
+### Release
+
+iOS klibs require a macOS host.
 
 ```bash
-ORG_GRADLE_PROJECT_githubPackagesUsername=omkardharmesh \
-ORG_GRADLE_PROJECT_githubPackagesPassword=$(gh auth token) \
-./gradlew :konnectivity:publishAllPublicationsToGithubPackagesRepository
+git tag v<X.Y.Z>
+git push origin v<X.Y.Z>
+./gradlew :konnectivity:publishAndReleaseToMavenCentral --no-configuration-cache
 ```
 
-This uses the active `gh` CLI account's token (no PAT stored on disk). Replace with `read:packages` + `write:packages` scoped PAT in `~/.gradle/gradle.properties` for repeatable publishes.
-
-Tag the release for traceability:
-
-```bash
-git tag v0.0.1
-git push origin v0.0.1
-```
+The artifact appears at [central.sonatype.com/artifact/io.github.omkardharmesh/konnectivity](https://central.sonatype.com/artifact/io.github.omkardharmesh/konnectivity) within ~10 minutes.
 
 ## Credits
 
